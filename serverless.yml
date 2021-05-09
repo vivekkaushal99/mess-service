@@ -1,0 +1,78 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: mess-service
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, "dev"}
+  region: ${file(./config/${self:provider.stage}.json):REGION}
+  lambdaHashingVersion: 20201221
+  logRetentionInDays: ${file(./config/${self:provider.stage}.json):LOG_RETENTION_PERIOD_IN_DAYS}
+  environment:
+    EXPENSES_TABLE: ${file(./config/${self:provider.stage}.json):EXPENSES_TABLE}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource: "*"
+
+functions:
+  createExpense:
+    handler: api/expenses.create
+    memorySize: 128
+    description: Create an expense (to be used by mess uncle)
+    events:
+      - http: 
+          path: expenses
+          method: post
+
+  fetchExpenses:
+    handler: api/expenses.fetch
+    memorySize: 128
+    description: Fetch all expenses for a roll number with a date range
+    events:
+      - http: 
+          path: expenses
+          method: get
+  
+resources:
+  Resources:
+    ExpensesDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: roll_no
+            AttributeType: S
+          -
+            AttributeName: created_at   # ISO-8601
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: roll_no
+            KeyType: HASH
+          - 
+            AttributeName: created_at
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+        TableName: ${self:provider.environment.EXPENSES_TABLE}

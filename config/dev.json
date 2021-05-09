@@ -1,0 +1,7 @@
+{
+    "APP_ENV": "dev",
+    "APP_NAME": "mess-service",
+    "REGION": "ap-south-1",
+    "EXPENSES_TABLE": "tb_mess_expenses",
+    "LOG_RETENTION_PERIOD_IN_DAYS": 7
+}
