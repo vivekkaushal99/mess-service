@@ -1,0 +1,12 @@
+__pycache__/
+.vscode/
+*.py[cod]
+*$py.class
+venv/
+*.zip
+test_*
+test/
+output.txt
+.serverless/
+node_modules/
+.DS_Store
